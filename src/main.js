@@ -22,14 +22,14 @@ function createWindow() {
       label: 'File',
       submenu: [
         {
-          label: 'Open File',
-          accelerator: 'CmdOrCtrl+O',
-          click() {
-            openFile();
-          }
+          label: 'Open File'
         },
         {
-          label: 'Open Folder'
+          label: 'Open Folder',
+          accelerator: 'CmdOrCtrl+O',
+          click() {
+            openDir();
+          }
         }
       ]
     },
@@ -183,4 +183,16 @@ function openFile() {
   console.log(fileContent);
   // Send filedContent to renderer
   mainWindow.webContents.send('new-file', fileContent);
+}
+
+// Open Direction
+function openDir() {
+  const directory = dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory']
+  });
+
+  if (!directory) return;
+
+  const dir = directory[0];
+  mainWindow.webContents.send('new-dir', dir);
 }
