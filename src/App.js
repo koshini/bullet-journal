@@ -15,7 +15,8 @@ class App extends Component {
   state = {
     loadedFile: '',
     dir: settings.get('dir') || null,
-    filesData: []
+    filesData: [],
+    activeIndex: 0
   };
 
   constructor() {
@@ -27,10 +28,8 @@ class App extends Component {
       this.loadAndReadFiles(dir);
     }
 
-    ipcRenderer.on('new-file', (event, fileContent) => {
-      this.setState({
-        loadedFile: fileContent
-      });
+    ipcRenderer.on('save-file', event => {
+      this.saveFile();
     });
 
     ipcRenderer.on('new-dir', (event, dir) => {
@@ -47,23 +46,59 @@ class App extends Component {
       const filteredFiles = files.filter(file => file.includes('.md'));
       const filesData = filteredFiles.map(file => ({ path: `${dir}/${file}` }));
 
-      this.setState({
-        filesData
-      });
+      this.setState(
+        {
+          filesData
+        },
+        () => this.loadFile(0)
+      );
+    });
+  };
+
+  loadFile = index => {
+    const { filesData } = this.state;
+
+    const content = fs.readFileSync(filesData[index].path).toString();
+
+    this.setState({
+      loadedFile: content,
+      activeIndex: index
+    });
+  };
+
+  changeFile = index => () => {
+    const { activeIndex } = this.state;
+    if (index !== activeIndex) {
+      this.saveFile();
+      this.loadFile(index);
+    }
+  };
+
+  saveFile = () => {
+    const { activeIndex, loadedFile, filesData } = this.state;
+    fs.writeFile(filesData[activeIndex].path, loadedFile, err => {
+      if (err) return console.log(err);
+      console.log('saved ');
     });
   };
 
   render() {
+    const { activeIndex, filesData, dir, loadedFile } = this.state;
     return (
-      <div className="App">
+      <AppWrapper>
         <Header>Bullet Journal</Header>
-        {this.state.dir ? (
+        {dir ? (
           <Split>
-            <div>
-              {this.state.filesData.map(file => (
-                <h1>{file.path}</h1>
+            <FilesWindow>
+              {filesData.map((file, index) => (
+                <FileButton
+                  active={activeIndex === index}
+                  onClick={this.changeFile(index)}
+                >
+                  {file.path}
+                </FileButton>
               ))}
-            </div>
+            </FilesWindow>
             <CodeWindow>
               <AceEditor
                 mode="markdown"
@@ -72,11 +107,11 @@ class App extends Component {
                   this.setState({ loadedFile: newContent });
                 }}
                 name="markdown_editor"
-                value={this.state.loadedFile}
+                value={loadedFile}
               />
             </CodeWindow>
             <RenderedWindow>
-              <Markdown>{this.state.loadedFile}</Markdown>
+              <Markdown>{loadedFile}</Markdown>
             </RenderedWindow>
           </Split>
         ) : (
@@ -84,12 +119,16 @@ class App extends Component {
             <h1>Open directory</h1>
           </OpenDirectoryMessage>
         )}
-      </div>
+      </AppWrapper>
     );
   }
 }
 
 export default App;
+
+const AppWrapper = styled.div`
+  margin-top: 23px;
+`;
 
 const OpenDirectoryMessage = styled.div`
   display: flex;
@@ -116,6 +155,23 @@ const Header = styled.header`
 const Split = styled.div`
   display: flex;
   height: 100vh;
+`;
+
+const FilesWindow = styled.div`
+  background-color: #140f1d;
+  border-right: solid 1px #302b3a;
+  position: relative;
+  width: 20%;
+
+  &:after {
+    content: '';
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    pointer-events: none;
+    box-shadow: -10px 0 20px rgba(0, 0, 0, 0.3) inset;
+  }
 `;
 
 const CodeWindow = styled.div`
@@ -145,4 +201,25 @@ const RenderedWindow = styled.div`
   a {
     color: #e54b4b;
   }
+`;
+
+const FileButton = styled.button`
+  padding: 10px;
+  width: 100%;
+  background: #191324;
+  opacity: 0.4;
+  color: white;
+  border: none;
+  border-bottom: solid 1px #302b3a;
+  transition: 0.3x ease all;
+
+  &:hover {
+    opacity: 1;
+    border-left: solid 4px white;
+  }
+
+  ${({ active }) =>
+    active &&
+    ` opacity: 1;
+    border-left: solid 4px white;`};
 `;

@@ -22,7 +22,11 @@ function createWindow() {
       label: 'File',
       submenu: [
         {
-          label: 'Open File'
+          label: 'Open File',
+          accelerator: 'CmdOrCtrl+S',
+          click() {
+            mainWindow.webContents.send('save-file');
+          }
         },
         {
           label: 'Open Folder',
