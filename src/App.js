@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Markdown from 'markdown-to-jsx';
 import AceEditor from 'react-ace';
 import styled from 'styled-components';
+import dateFns from 'date-fns';
 import brace from 'brace';
 import 'brace/mode/markdown';
 import 'brace/theme/dracula';
@@ -44,7 +45,25 @@ class App extends Component {
   loadAndReadFiles = dir => {
     fs.readdir(dir, (err, files) => {
       const filteredFiles = files.filter(file => file.includes('.md'));
-      const filesData = filteredFiles.map(file => ({ path: `${dir}/${file}` }));
+      const filesData = filteredFiles.map(file => {
+        const date = file.substr(
+          file.indexOf('_') + 1,
+          file.indexOf('.') - file.indexOf('_') - 1
+        );
+        return {
+          date,
+          path: `${dir}/${file}`,
+          title: file.substr(0, file.indexOf('_'))
+        };
+      });
+
+      filesData.sort((a, b) => {
+        const aDate = new Date(a.date);
+        const bDate = new Date(b.date);
+        const aSec = aDate.getTime();
+        const bSec = bDate.getTime();
+        return aSec - bSec;
+      });
 
       this.setState(
         {
@@ -95,7 +114,8 @@ class App extends Component {
                   active={activeIndex === index}
                   onClick={this.changeFile(index)}
                 >
-                  {file.path}
+                  <p className="title">{file.title}</p>
+                  <p className="date">{formatDate(file.date)}</p>
                 </FileButton>
               ))}
             </FilesWindow>
@@ -206,12 +226,22 @@ const RenderedWindow = styled.div`
 const FileButton = styled.button`
   padding: 10px;
   width: 100%;
+  text-align: left;
   background: #191324;
   opacity: 0.4;
   color: white;
   border: none;
   border-bottom: solid 1px #302b3a;
   transition: 0.3x ease all;
+
+  .title {
+    font-weight: bold;
+    margin: 0 0 5px;
+  }
+
+  .date {
+    margin: 0;
+  }
 
   &:hover {
     opacity: 1;
@@ -223,3 +253,5 @@ const FileButton = styled.button`
     ` opacity: 1;
     border-left: solid 4px white;`};
 `;
+
+const formatDate = date => dateFns.format(new Date(date), 'MMMM Do YYYY');
