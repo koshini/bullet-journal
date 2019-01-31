@@ -1,7 +1,19 @@
 {
-  "name": "bullet-journal",
+  "name": "BulletJournal",
+  "author": "Shini Ko",
   "version": "0.1.0",
   "private": true,
+  "build": {
+    "appId": "com.shiniko.journal",
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "directory": {
+      "buildResources": "assets"
+    }
+  },
+  "homepage": "./",
   "dependencies": {
     "date-fns": "^1.30.1",
     "electron-react-devtools": "^0.5.3",
@@ -13,7 +25,7 @@
     "react-scripts": "2.1.3",
     "styled-components": "^4.1.3"
   },
-  "main": "src/main.js",
+  "main": "public/electron.js",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -31,6 +43,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "electron": "^4.0.1"
+    "electron": "^4.0.1",
+    "electron-builder": "^20.38.5"
   }
 }

@@ -11,7 +11,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    titleBarStyle: 'hidden'
+    titleBarStyle: 'hidden',
   });
 
   // and load the index.html of the app.
@@ -26,16 +26,16 @@ function createWindow() {
           accelerator: 'CmdOrCtrl+S',
           click() {
             mainWindow.webContents.send('save-file');
-          }
+          },
         },
         {
           label: 'Open Folder',
           accelerator: 'CmdOrCtrl+O',
           click() {
             openDir();
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
     {
       label: 'Developer',
@@ -44,9 +44,9 @@ function createWindow() {
           label: 'Toggle Dveloper Tools',
           click() {
             mainWindow.webContents.toggleDevTools();
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
     {
       label: 'Edit',
@@ -59,8 +59,8 @@ function createWindow() {
         { role: 'paste' },
         { role: 'pasteandmatchstyle' },
         { role: 'delete' },
-        { role: 'selectall' }
-      ]
+        { role: 'selectall' },
+      ],
     },
     {
       label: 'View',
@@ -73,12 +73,12 @@ function createWindow() {
         { role: 'zoomin' },
         { role: 'zoomout' },
         { type: 'separator' },
-        { role: 'togglefullscreen' }
-      ]
+        { role: 'togglefullscreen' },
+      ],
     },
     {
       role: 'window',
-      submenu: [{ role: 'minimize' }, { role: 'close' }]
+      submenu: [{ role: 'minimize' }, { role: 'close' }],
     },
     {
       role: 'help',
@@ -87,10 +87,10 @@ function createWindow() {
           label: 'Learn More',
           click() {
             require('electron').shell.openExternal('https://electronjs.org');
-          }
-        }
-      ]
-    }
+          },
+        },
+      ],
+    },
   ];
 
   // If macOS
@@ -106,8 +106,8 @@ function createWindow() {
         { role: 'hideothers' },
         { role: 'unhide' },
         { type: 'separator' },
-        { role: 'quit' }
-      ]
+        { role: 'quit' },
+      ],
     });
 
     // Edit menu
@@ -117,7 +117,7 @@ function createWindow() {
         label: 'Speech',
         acclerator:
           process.platform === 'darwin' ? 'Alt+Command+I' : 'Ctrl+Shift+I',
-        submenu: [{ role: 'startspeaking' }, { role: 'stopspeaking' }]
+        submenu: [{ role: 'startspeaking' }, { role: 'stopspeaking' }],
       }
     );
 
@@ -127,7 +127,7 @@ function createWindow() {
       { role: 'minimize' },
       { role: 'zoom' },
       { type: 'separator' },
-      { role: 'front' }
+      { role: 'front' },
     ];
   }
   const menu = Menu.buildFromTemplate(template);
@@ -175,11 +175,11 @@ function openFile() {
   // Opens file dialog looking for markdown
   const files = dialog.showOpenDialog(mainWindow, {
     properties: ['openFile'],
-    filters: [{ name: 'Markdown', extensions: ['md', 'markdown', 'txt'] }]
+    filters: [{ name: 'Markdown', extensions: ['md', 'markdown', 'txt'] }],
   });
 
   // If no files
-  if (!files) return;
+  if (!files) return [];
 
   const file = files[0]; // Grabs first file path in array
   // Loads file contents via path acquired via the dialog
@@ -192,7 +192,7 @@ function openFile() {
 // Open Direction
 function openDir() {
   const directory = dialog.showOpenDialog(mainWindow, {
-    properties: ['openDirectory']
+    properties: ['openDirectory'],
   });
 
   if (!directory) return;

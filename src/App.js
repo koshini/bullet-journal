@@ -17,7 +17,9 @@ class App extends Component {
     loadedFile: '',
     dir: settings.get('dir') || null,
     filesData: [],
-    activeIndex: 0
+    activeIndex: 0,
+    newEntry: false,
+    newEntryName: '',
   };
 
   constructor() {
@@ -35,7 +37,7 @@ class App extends Component {
 
     ipcRenderer.on('new-dir', (event, dir) => {
       this.setState({
-        dir: dir
+        dir: dir,
       });
       settings.set('dir', dir);
       this.loadAndReadFiles(dir);
@@ -53,7 +55,7 @@ class App extends Component {
         return {
           date,
           path: `${dir}/${file}`,
-          title: file.substr(0, file.indexOf('_'))
+          title: file.substr(0, file.indexOf('_')),
         };
       });
 
@@ -62,12 +64,12 @@ class App extends Component {
         const bDate = new Date(b.date);
         const aSec = aDate.getTime();
         const bSec = bDate.getTime();
-        return aSec - bSec;
+        return bSec - aSec;
       });
 
       this.setState(
         {
-          filesData
+          filesData,
         },
         () => this.loadFile(0)
       );
@@ -81,7 +83,7 @@ class App extends Component {
 
     this.setState({
       loadedFile: content,
-      activeIndex: index
+      activeIndex: index,
     });
   };
 
@@ -101,14 +103,58 @@ class App extends Component {
     });
   };
 
+  newFile = e => {
+    e.preventDefault();
+    console.log('add new file');
+    const { newEntryName, dir, filesData } = this.state;
+    const fileDate = dateFns.format(new Date(), 'MM-DD-YYYY');
+    const filePath = `${dir}/${newEntryName}_${fileDate}.md`;
+    fs.writeFile(filePath, '', err => {
+      if (err) return console.log(err);
+      filesData.unshift({
+        path: filePath,
+        date: fileDate,
+        title: newEntryName,
+      });
+      this.setState({
+        newEntry: false,
+        newEntryName: '',
+        loadedFile: '',
+        filesData,
+      });
+    });
+  };
+
   render() {
-    const { activeIndex, filesData, dir, loadedFile } = this.state;
+    const {
+      activeIndex,
+      filesData,
+      dir,
+      loadedFile,
+      newEntry,
+      newEntryName,
+    } = this.state;
     return (
       <AppWrapper>
         <Header>Bullet Journal</Header>
         {dir ? (
           <Split>
             <FilesWindow>
+              <Button onClick={() => this.setState({ newEntry: !newEntry })}>
+                + New Entry
+              </Button>
+              {newEntry && (
+                <form onSubmit={this.newFile}>
+                  <input
+                    autoFocus
+                    type="text"
+                    value={newEntryName}
+                    onChange={e =>
+                      this.setState({ newEntryName: e.target.value })
+                    }
+                  />
+                </form>
+              )}
               {filesData.map((file, index) => (
                 <FileButton
                   active={activeIndex === index}
@@ -252,6 +298,21 @@ const FileButton = styled.button`
     active &&
     ` opacity: 1;
     border-left: solid 4px white;`};
+`;
+
+const Button = styled.button`
+  display: block;
+  background: transparent;
+  color: white;
+  border: solid 1px white;
+  border-radius: 4px;
+  margin: 1rem auto;
+  font-size: 1rem;
+  transition: 0.3 ease all;
+
+  &:hover {
+    color: lightgray;
+  }
 `;
 
 const formatDate = date => dateFns.format(new Date(date), 'MMMM Do YYYY');
